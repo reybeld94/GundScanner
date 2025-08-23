@@ -1,0 +1,25 @@
+# Gradle
+.gradle/
+build/
+
+# Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Logs
+*.log
+
+# APK
+*.apk
+*.ap_
+
+# Cache
+*.cxx/
+captures/
+.externalNativeBuild/
+
+# Local config
+local.properties
