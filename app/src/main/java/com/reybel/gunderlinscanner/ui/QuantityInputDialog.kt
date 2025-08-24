@@ -97,7 +97,7 @@ class QuantityInputDialog(
         // Limit to reasonable number of digits (e.g., 8 total)
         if (currentInput.length < 8) {
             // If current input is "0" or "1" (default), replace it with the new digit
-            if ((currentInput.toString() == "0" || currentInput.toString() == "1") && digit != "0") {
+            if (currentInput.toString() == "0" || currentInput.toString() == "1") {
                 currentInput.clear()
                 hasDecimal = false
             }
