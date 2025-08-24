@@ -1,3 +1,38 @@
 <resources>
     <string name="app_name">GunderlinScanner</string>
+
+    <!-- Header and Status -->
+    <string name="no_active_user">No active user</string>
+    <string name="current_user_format">User: %s</string>
+    <string name="server_connected">● Connected (%s)</string>
+    <string name="server_disconnected">● Disconnected (%s)</string>
+    <string name="configure">CONFIGURE</string>
+
+    <!-- Scanner Instructions -->
+    <string name="scan_user_id">Scan your user ID</string>
+    <string name="user_id_format">Format: A#12345</string>
+    <string name="scan_work_order">Scan Work Order</string>
+    <string name="work_order_format">Format: 1234O56R78</string>
+
+    <!-- Activity Log -->
+    <string name="activity_log">Activity Log</string>
+    <string name="clear">Clear</string>
+
+    <!-- Scanner Status -->
+    <string name="scanner_ready">🟢 SCANNER READY</string>
+    <string name="usb_scanner_ready">📡 USB Scanner ready</string>
+    <string name="config">CONFIG</string>
+
+    <!-- Settings Dialog -->
+    <string name="server_settings">Server Settings</string>
+    <string name="server_url">Server URL:</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Error Dialog -->
+    <string name="system_error">⚠️ SYSTEM ERROR</string>
+    <string name="ok">OK</string>
+
+    <!-- Toast Messages -->
+    <string name="operation_successful">Operation successful</string>
 </resources>

@@ -14,6 +14,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.reybel.gunderlinscanner.databinding.ActivityMainBinding
 import com.reybel.gunderlinscanner.ui.LogAdapter
 import com.reybel.gunderlinscanner.ui.MainViewModel
+import com.reybel.gunderlinscanner.ui.QuantityInputDialog
 import com.reybel.gunderlinscanner.utils.AppPreferences
 import com.reybel.gunderlinscanner.utils.BarcodeInputHandler
 import com.reybel.gunderlinscanner.utils.Logger
@@ -24,6 +25,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var logAdapter: LogAdapter
     private lateinit var preferences: AppPreferences
     private lateinit var barcodeHandler: BarcodeInputHandler
+
+    private var quantityDialog: QuantityInputDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         setupObservers()
 
         Logger.init(this)
-        Logger.log("🟢 App iniciada - Scanner USB listo")
+        Logger.log("🟢 App started - USB Scanner ready")
     }
 
     private fun setupWindowInsets() {
@@ -78,21 +81,21 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnClearLogs.setOnClickListener {
             logAdapter.clearLogs()
-            Logger.log("🧹 Logs limpiados")
+            Logger.log("🧹 Logs cleared")
         }
 
         // Setup initial state
-        updateScannerHint("Escanee su ID de usuario", "Formato: A12345")
+        updateScannerHint("Scan your user ID", "Format: A12345")
     }
 
-    // ¡CLAVE! - Interceptar eventos de teclado para el scanner USB
+    // KEY! - Intercept keyboard events for USB scanner
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        // Primero intentar que el handler procese el evento
+        // First try to let handler process the event
         if (barcodeHandler.handleKeyEvent(keyCode, event)) {
             return true
         }
 
-        // Si no fue procesado por el scanner, usar comportamiento normal
+        // If not processed by scanner, use normal behavior
         return super.onKeyDown(keyCode, event)
     }
 
@@ -100,17 +103,17 @@ class MainActivity : AppCompatActivity() {
         // Observe current user
         viewModel.currentUser.observe(this) { user ->
             if (user != null) {
-                binding.textCurrentUser.text = "Usuario: $user"
+                binding.textCurrentUser.text = "User: $user"
                 binding.statusIndicator.setBackgroundColor(
                     ContextCompat.getColor(this, R.color.status_waiting)
                 )
-                updateScannerHint("Escanee Work Order", "Formato: 1234O56R78")
+                updateScannerHint("Scan Work Order", "Format: 1234O56R78")
             } else {
-                binding.textCurrentUser.text = "Sin usuario activo"
+                binding.textCurrentUser.text = getString(R.string.no_active_user)
                 binding.statusIndicator.setBackgroundColor(
                     ContextCompat.getColor(this, R.color.status_inactive)
                 )
-                updateScannerHint("Escanee su ID de usuario", "Formato: A12345")
+                updateScannerHint("Scan your user ID", "Format: A12345")
             }
         }
 
@@ -124,9 +127,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             binding.textServerStatus.text = if (isConnected) {
-                "● Conectado ($serverHost)"
+                "● Connected ($serverHost)"
             } else {
-                "● Desconectado ($serverHost)"
+                "● Disconnected ($serverHost)"
             }
             binding.textServerStatus.setTextColor(
                 ContextCompat.getColor(
@@ -156,18 +159,26 @@ class MainActivity : AppCompatActivity() {
                 viewModel.clearSuccessMessage()
             }
         }
+
+        // NEW: Observe quantity dialog requests
+        viewModel.showQuantityDialog.observe(this) { clockOutRequest ->
+            if (clockOutRequest != null) {
+                showQuantityDialog(clockOutRequest)
+                viewModel.clearQuantityDialog()
+            }
+        }
     }
 
     private fun updateScannerHint(main: String, sub: String) {
         binding.textScannerHint.text = main
-        // El subtítulo ya está en el XML estático
+        // The subtitle is already in static XML
     }
 
     private fun showErrorDialog(message: String) {
         MaterialAlertDialogBuilder(this)
-            .setTitle("⚠️ ERROR DEL SISTEMA")
+            .setTitle(getString(R.string.system_error))
             .setMessage(message)
-            .setPositiveButton("OK", null)
+            .setPositiveButton(getString(R.string.ok), null)
             .show()
     }
 
@@ -178,20 +189,55 @@ class MainActivity : AppCompatActivity() {
         }
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("Configuración del Servidor")
-            .setMessage("URL del servidor:")
+            .setTitle(getString(R.string.server_settings))
+            .setMessage(getString(R.string.server_url))
             .setView(input)
-            .setPositiveButton("Guardar") { _, _ ->
+            .setPositiveButton(getString(R.string.save)) { _, _ ->
                 val newUrl = input.text.toString().trim()
                 if (newUrl.isNotEmpty()) {
                     preferences.setServerUrl(newUrl)
-                    // Ya no tenemos textServerUrl en el nuevo layout
                     viewModel.updateServerUrl(newUrl)
-                    Logger.log("⚙️ URL del servidor actualizada: $newUrl")
+                    Logger.log("⚙️ Server URL updated: $newUrl")
                 }
             }
-            .setNegativeButton("Cancelar", null)
+            .setNegativeButton(getString(R.string.cancel), null)
             .show()
+    }
+
+    private fun showQuantityDialog(clockOutRequest: MainViewModel.ClockOutRequest) {
+        // Dismiss any existing dialog
+        quantityDialog?.dismiss()
+
+        val workOrderInfo = "${clockOutRequest.woNumber}O${getOperationId(clockOutRequest.operation)}R${clockOutRequest.routerId}"
+
+        quantityDialog = QuantityInputDialog.show(
+            context = this,
+            workOrderInfo = workOrderInfo,
+            onQuantityConfirmed = { quantity ->
+                Logger.log("📦 Quantity entered: $quantity for WO ${clockOutRequest.woNumber}")
+                viewModel.processClockOut(clockOutRequest, quantity)
+            },
+            onCancelled = {
+                Logger.log("❌ Clock Out cancelled by user")
+                // Reset user state when cancelled
+                viewModel.apply {
+                    clearErrorMessage()
+                    clearSuccessMessage()
+                }
+            }
+        )
+    }
+
+    private fun getOperationId(operationName: String): String {
+        // Reverse lookup of operation ID from name
+        return when (operationName) {
+            "OP Laser Cutting" -> "51"
+            "OP Forming" -> "52"
+            "OP Welding" -> "53"
+            "OP QC" -> "54"
+            "OP Painting" -> "55"
+            else -> "51" // Default
+        }
     }
 
     override fun onResume() {
@@ -202,5 +248,6 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         barcodeHandler.destroy()
+        quantityDialog?.dismiss()
     }
 }

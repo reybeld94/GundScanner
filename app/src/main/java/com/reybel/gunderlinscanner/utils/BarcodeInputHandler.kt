@@ -12,21 +12,21 @@ class BarcodeInputHandler(
 ) {
     private var scanBuffer = StringBuilder()
     private var lastInputTime = 0L
-    private val scanTimeout = 300L // 300ms timeout para detectar scanner
+    private val scanTimeout = 300L // 300ms timeout to detect scanner
     private val minBarcodeLength = 3
 
     private var timeoutJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Main)
 
     fun handleKeyEvent(keyCode: Int, event: KeyEvent): Boolean {
-        // Solo procesar eventos KEY_DOWN
+        // Only process KEY_DOWN events
         if (event.action != KeyEvent.ACTION_DOWN) {
             return false
         }
 
         val currentTime = System.currentTimeMillis()
 
-        // Si ha pasado mucho tiempo desde el último input, limpiar buffer
+        // If too much time has passed since last input, clear buffer
         if (currentTime - lastInputTime > scanTimeout) {
             scanBuffer.clear()
         }
@@ -35,26 +35,26 @@ class BarcodeInputHandler(
 
         when (keyCode) {
             KeyEvent.KEYCODE_ENTER -> {
-                // Scanner terminó, procesar código
+                // Scanner finished, process code
                 processScanBuffer()
                 return true
             }
 
-            // Caracteres alfanuméricos y símbolos comunes
+            // Alphanumeric characters and common symbols
             in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9,
             in KeyEvent.KEYCODE_A..KeyEvent.KEYCODE_Z,
             KeyEvent.KEYCODE_SPACE -> {
 
-                // Agregar carácter al buffer
+                // Add character to buffer
                 val char = getCharFromKeyEvent(keyCode, event)
                 if (char != null) {
                     scanBuffer.append(char)
 
-                    // Cancelar timeout previo y crear uno nuevo
+                    // Cancel previous timeout and create new one
                     timeoutJob?.cancel()
                     timeoutJob = scope.launch {
                         delay(scanTimeout)
-                        // Si no hay más input, procesar lo que tenemos
+                        // If no more input, process what we have
                         if (scanBuffer.isNotEmpty()) {
                             processScanBuffer()
                         }
@@ -63,13 +63,13 @@ class BarcodeInputHandler(
                 return true
             }
 
-            // Para cualquier otra tecla, intentar capturar el carácter
+            // For any other key, try to capture the character
             else -> {
                 val char = getCharFromKeyEvent(keyCode, event)
                 if (char != null && (char.isLetterOrDigit() || char == ' ')) {
                     scanBuffer.append(char)
 
-                    // Cancelar timeout previo y crear uno nuevo
+                    // Cancel previous timeout and create new one
                     timeoutJob?.cancel()
                     timeoutJob = scope.launch {
                         delay(scanTimeout)
@@ -92,28 +92,28 @@ class BarcodeInputHandler(
         scanBuffer.clear()
 
         if (scannedCode.length >= minBarcodeLength) {
-            Logger.log("🔍 Scanner USB detectado: $scannedCode")
+            Logger.log("🔍 USB Scanner detected: $scannedCode")
             onBarcodeScanned(scannedCode)
         }
     }
 
     private fun getCharFromKeyEvent(keyCode: Int, event: KeyEvent): Char? {
         return when (keyCode) {
-            // Números
+            // Numbers
             in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9 -> {
                 (keyCode - KeyEvent.KEYCODE_0 + '0'.code).toChar()
             }
 
-            // Letras
+            // Letters
             in KeyEvent.KEYCODE_A..KeyEvent.KEYCODE_Z -> {
                 val baseChar = (keyCode - KeyEvent.KEYCODE_A + 'a'.code).toChar()
                 if (event.isShiftPressed) baseChar.uppercaseChar() else baseChar
             }
 
-            // Símbolos especiales - Solo espacio ahora
+            // Special symbols - Only space now
             KeyEvent.KEYCODE_SPACE -> ' '
 
-            // Intentar obtener el carácter usando el método nativo de Android
+            // Try to get character using Android's native method
             else -> {
                 try {
                     val unicodeChar = event.unicodeChar

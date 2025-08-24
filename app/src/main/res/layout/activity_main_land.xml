@@ -10,7 +10,7 @@
     android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <!-- Header más compacto para landscape -->
+    <!-- Improved compact header for landscape -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardHeader"
         android:layout_width="0dp"
@@ -26,7 +26,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="12dp">
 
@@ -34,7 +34,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="center"
+                android:gravity="center_vertical"
                 android:text="🏭 GUNDERLIN SCANNER"
                 android:textColor="@color/text_primary_dark"
                 android:textSize="18sp"
@@ -43,13 +43,14 @@
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginEnd="12dp">
 
                 <TextView
                     android:id="@+id/textServerUrl"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Servidor: localhost:5000"
+                    android:text="Server: localhost:5000"
                     android:textColor="@color/text_secondary_dark"
                     android:textSize="12sp" />
 
@@ -57,17 +58,34 @@
                     android:id="@+id/textServerStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🔴 Sin conexión"
+                    android:text="🔴 No connection"
                     android:textColor="@color/text_secondary_dark"
                     android:textSize="10sp" />
 
             </LinearLayout>
 
+            <!-- Settings Icon Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSettings"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                app:icon="@drawable/ic_settings"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconSize="18dp"
+                app:iconTint="@color/text_link"
+                android:contentDescription="Settings" />
+
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Layout horizontal: Usuario y Logs lado a lado -->
+    <!-- Horizontal layout: User and Logs side by side -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -79,7 +97,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cardHeader">
 
-        <!-- Panel izquierdo: Usuario y controles -->
+        <!-- Left panel: User and controls -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -108,7 +126,7 @@
                         android:id="@+id/textCurrentUser"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="👤 Sin usuario activo"
+                        android:text="👤 No active user"
                         android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -117,7 +135,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Escanea tu ID de usuario (A12345)"
+                        android:text="Scan your user ID (A12345)"
                         android:textColor="@color/text_hint"
                         android:textSize="11sp" />
 
@@ -140,27 +158,15 @@
                     android:layout_height="48dp"
                     android:layout_marginBottom="4dp"
                     android:backgroundTint="@color/success"
-                    android:text="🟢 SCANNER LISTO"
+                    android:text="🟢 SCANNER READY"
                     android:textColor="@color/white"
                     android:textSize="12sp"
                     android:textStyle="bold"
                     app:cornerRadius="8dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSettings"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:text="CONFIG"
-                    android:textColor="@color/primary"
-                    android:textSize="12sp"
-                    app:cornerRadius="8dp"
-                    app:strokeColor="@color/primary"
-                    app:strokeWidth="1dp" />
-
             </LinearLayout>
 
-            <!-- Scanner Hint compacto -->
+            <!-- Compact Scanner Hint -->
             <TextView
                 android:id="@+id/textScannerHint"
                 android:layout_width="match_parent"
@@ -168,13 +174,13 @@
                 android:background="@color/info"
                 android:gravity="center"
                 android:padding="8dp"
-                android:text="📡 Scanner USB listo"
+                android:text="📡 USB Scanner ready"
                 android:textColor="@color/white"
                 android:textSize="11sp" />
 
         </LinearLayout>
 
-        <!-- Panel derecho: Logs -->
+        <!-- Right panel: Logs -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardLogs"
             android:layout_width="0dp"
@@ -190,33 +196,40 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-                <!-- Logs Header compacto -->
+                <!-- Fixed Compact Logs Header -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@color/header_bg"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="8dp">
+                    android:padding="8dp"
+                    android:minHeight="44dp">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="📋 REGISTRO DE ACTIVIDAD"
+                        android:text="📋 ACTIVITY LOG"
                         android:textColor="@color/text_primary_dark"
                         android:textSize="12sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:gravity="center_vertical" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnClearLogs"
                         style="@style/Widget.Material3.Button.TextButton"
                         android:layout_width="wrap_content"
-                        android:layout_height="28dp"
-                        android:minHeight="0dp"
-                        android:text="LIMPIAR"
+                        android:layout_height="36dp"
+                        android:minWidth="60dp"
+                        android:minHeight="36dp"
+                        android:text="CLEAR"
                         android:textColor="@color/text_link"
-                        android:textSize="10sp" />
+                        android:textSize="10sp"
+                        android:textAllCaps="false"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="0dp"
+                        android:layout_gravity="center_vertical" />
 
                 </LinearLayout>
 

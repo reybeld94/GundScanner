@@ -15,7 +15,7 @@ import java.util.regex.Pattern
 class MainViewModel : ViewModel() {
 
     companion object {
-        // Mapeo de operaciones desde el cliente Python
+        // Operation mapping from Python client
         private val OPERATION_MAP = mapOf(
             "51" to "OP Laser Cutting",
             "52" to "OP Forming",
@@ -24,17 +24,17 @@ class MainViewModel : ViewModel() {
             "55" to "OP Painting"
         )
 
-        // Regex patterns - SIN simbolo #
+        // Regex patterns - WITHOUT # symbol
         private val USER_PATTERN = Pattern.compile("^A(\\d+)$")
         private val WORK_ORDER_PATTERN = Pattern.compile("^(\\d+)O(\\d+)R(\\d+)$")
 
-        // DEBUG: Patrones para testing
-        private const val DEBUG_MODE = false  // Cambiar a false para producción
+        // DEBUG: Testing patterns
+        private const val DEBUG_MODE = false  // Change to false for production
     }
 
     private val apiClient = ApiClient()
 
-    // LiveData para la UI
+    // LiveData for UI
     private val _currentUser = MutableLiveData<String?>()
     val currentUser: LiveData<String?> = _currentUser
 
@@ -56,57 +56,68 @@ class MainViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
+    // NEW: LiveData for Clock Out dialog
+    private val _showQuantityDialog = MutableLiveData<ClockOutRequest?>()
+    val showQuantityDialog: LiveData<ClockOutRequest?> = _showQuantityDialog
+
+    data class ClockOutRequest(
+        val userId: String,
+        val woNumber: String,
+        val operation: String,
+        val routerId: String
+    )
+
     init {
         checkServerConnection()
     }
 
     fun processScannedCode(code: String) {
         viewModelScope.launch {
-            addLog("🔍 Código escaneado: $code")
-            Logger.log("📥 Escaneo encolado: $code")
+            addLog("🔍 Code scanned: $code")
+            Logger.log("📥 Scan queued: $code")
 
-            // DEBUG: Información detallada
+            // DEBUG: Detailed information
             if (DEBUG_MODE) {
-                addLog("🔧 DEBUG: Código recibido: '$code'")
-                addLog("🔧 DEBUG: Longitud: ${code.length}")
-                addLog("🔧 DEBUG: Caracteres: ${code.toCharArray().joinToString(",") { "'$it'" }}")
-                addLog("🔧 DEBUG: Patrón usuario: ${USER_PATTERN.pattern()}")
+                addLog("🔧 DEBUG: Code received: '$code'")
+                addLog("🔧 DEBUG: Length: ${code.length}")
+                addLog("🔧 DEBUG: Characters: ${code.toCharArray().joinToString(",") { "'$it'" }}")
+                addLog("🔧 DEBUG: User pattern: ${USER_PATTERN.pattern()}")
             }
 
-            // Escaneo de usuario
+            // User scan
             val userMatcher = USER_PATTERN.matcher(code)
             if (DEBUG_MODE) {
-                addLog("🔧 DEBUG: ¿Coincide patrón? ${userMatcher.matches()}")
+                addLog("🔧 DEBUG: Pattern matches? ${userMatcher.matches()}")
             }
             if (userMatcher.matches()) {
                 val userId = userMatcher.group(1)!!
                 _currentUser.value = userId
                 _isWaitingForAction.value = true
-                addLog("👤 Usuario escaneado: $userId")
-                Logger.log("👤 Usuario escaneado: $userId")
+                addLog("👤 User scanned: $userId")
+                Logger.log("👤 User scanned: $userId")
                 return@launch
             }
 
-            // Verificar que hay un usuario activo
+            // Verify active user
             val currentUserId = _currentUser.value
             if (!_isWaitingForAction.value!! || currentUserId == null) {
-                val errorMsg = "⚠️ Escanee primero su ID de usuario."
+                val errorMsg = "⚠️ Please scan your user ID first."
                 addLog(errorMsg)
                 Logger.log(errorMsg)
                 _errorMessage.value = "PLEASE SCAN YOUR USER ID FIRST"
                 return@launch
             }
 
-            // Verificar conectividad del servidor
+            // Verify server connectivity
             if (!_isServerConnected.value!!) {
-                val errorMsg = "❌ Servidor no disponible"
+                val errorMsg = "❌ Server not available"
                 addLog(errorMsg)
                 Logger.log(errorMsg)
                 _errorMessage.value = "SERVER NOT AVAILABLE"
                 return@launch
             }
 
-            // Formato universal: 3136O51R80
+            // Universal format: 3136O51R80
             val workOrderMatcher = WORK_ORDER_PATTERN.matcher(code)
             if (workOrderMatcher.matches()) {
                 val wo = workOrderMatcher.group(1)!!
@@ -115,7 +126,7 @@ class MainViewModel : ViewModel() {
 
                 val opName = OPERATION_MAP[opId]
                 if (opName == null) {
-                    val errorMsg = "❌ Operación desconocida: $opId"
+                    val errorMsg = "❌ Unknown operation: $opId"
                     addLog(errorMsg)
                     Logger.log(errorMsg)
                     _errorMessage.value = "UNKNOWN OPERATION ID"
@@ -124,7 +135,7 @@ class MainViewModel : ViewModel() {
 
                 processWorkOrder(currentUserId, wo, opName, routerId)
             } else {
-                val errorMsg = "❌ Código inválido: $code"
+                val errorMsg = "❌ Invalid code: $code"
                 addLog(errorMsg)
                 Logger.log(errorMsg)
                 _errorMessage.value = "INVALID BARCODE FORMAT"
@@ -136,9 +147,9 @@ class MainViewModel : ViewModel() {
         _isLoading.value = true
 
         try {
-            addLog("⏳ Enviando comando al servidor...")
+            addLog("⏳ Sending command to server...")
 
-            // Enviar comando de clock in
+            // Send clock in command
             val commandId = apiClient.sendClockInWorkOrder(
                 CommandRequest.ClockInWO(
                     userId = userId,
@@ -148,34 +159,106 @@ class MainViewModel : ViewModel() {
                 )
             )
 
-            addLog("⏳ Comando enviado: $commandId")
-            Logger.log("⏳ Comando enviado al servidor: $commandId")
+            addLog("⏳ Command sent: $commandId")
+            Logger.log("⏳ Command sent to server: $commandId")
 
-            // Esperar resultado
+            // Wait for result
             val result = apiClient.waitForCommandCompletion(commandId)
 
             if (result.success) {
-                val successMsg = "✅ Clock In exitoso en WO $wo"
+                val successMsg = "✅ Clock In successful on WO $wo"
                 addLog(successMsg)
                 Logger.log(successMsg)
-                _successMessage.value = "Operación exitosa"
+                _successMessage.value = "Operation successful"
+
+                // Reset user state after successful Clock In
+                _currentUser.value = null
+                _isWaitingForAction.value = false
+
             } else {
-                val errorMsg = "❌ Clock In falló: ${result.message}"
-                addLog(errorMsg)
-                Logger.log(errorMsg)
-                _errorMessage.value = "CLOCK IN FAILED"
+                // Check if the error indicates Clock In already exists (need Clock Out)
+                if (result.message.contains("ya tiene un clock in activo") ||
+                    result.message.contains("Clock In already exists") ||
+                    result.message.contains("already has an active clock in")) {
+
+                    addLog("🔄 Clock In exists, requesting Clock Out quantity...")
+                    Logger.log("🔄 Requesting Clock Out for WO: $wo")
+
+                    // Show quantity dialog for Clock Out
+                    _showQuantityDialog.value = ClockOutRequest(userId, wo, operation, routerId)
+
+                } else {
+                    val errorMsg = "❌ Clock In failed: ${result.message}"
+                    addLog(errorMsg)
+                    Logger.log(errorMsg)
+                    _errorMessage.value = "CLOCK IN FAILED"
+
+                    // Reset user state on error
+                    _currentUser.value = null
+                    _isWaitingForAction.value = false
+                }
             }
 
         } catch (e: Exception) {
-            val errorMsg = "❌ Error de comunicación: ${e.message}"
+            val errorMsg = "❌ Communication error: ${e.message}"
             addLog(errorMsg)
             Logger.log(errorMsg)
             _errorMessage.value = "COMMUNICATION ERROR"
-        } finally {
-            // Limpiar estados
+
+            // Reset user state on exception
             _currentUser.value = null
             _isWaitingForAction.value = false
+        } finally {
             _isLoading.value = false
+        }
+    }
+
+    // NEW: Handle Clock Out with quantity
+    fun processClockOut(clockOutRequest: ClockOutRequest, quantity: Double) {
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            try {
+                addLog("⏳ Sending Clock Out command (qty: $quantity)...")
+
+                // Send clock out command
+                val commandId = apiClient.sendClockOut(
+                    CommandRequest.ClockOut(
+                        userId = clockOutRequest.userId,
+                        woNumber = clockOutRequest.woNumber,
+                        qty = quantity
+                    )
+                )
+
+                addLog("⏳ Clock Out command sent: $commandId")
+                Logger.log("⏳ Clock Out command sent to server: $commandId")
+
+                // Wait for result
+                val result = apiClient.waitForCommandCompletion(commandId)
+
+                if (result.success) {
+                    val successMsg = "✅ Clock Out successful on WO ${clockOutRequest.woNumber} (qty: $quantity)"
+                    addLog(successMsg)
+                    Logger.log(successMsg)
+                    _successMessage.value = "Clock Out successful"
+                } else {
+                    val errorMsg = "❌ Clock Out failed: ${result.message}"
+                    addLog(errorMsg)
+                    Logger.log(errorMsg)
+                    _errorMessage.value = "CLOCK OUT FAILED"
+                }
+
+            } catch (e: Exception) {
+                val errorMsg = "❌ Clock Out communication error: ${e.message}"
+                addLog(errorMsg)
+                Logger.log(errorMsg)
+                _errorMessage.value = "COMMUNICATION ERROR"
+            } finally {
+                // Always reset state after Clock Out attempt
+                _currentUser.value = null
+                _isWaitingForAction.value = false
+                _isLoading.value = false
+            }
         }
     }
 
@@ -186,13 +269,13 @@ class MainViewModel : ViewModel() {
                 _isServerConnected.value = isConnected
 
                 if (isConnected) {
-                    addLog("✅ Servidor conectado correctamente")
+                    addLog("✅ Server connected successfully")
                 } else {
-                    addLog("🔴 Sin conexión al servidor")
+                    addLog("🔴 No server connection")
                 }
             } catch (e: Exception) {
                 _isServerConnected.value = false
-                addLog("🔴 Error conectando al servidor: ${e.message}")
+                addLog("🔴 Error connecting to server: ${e.message}")
             }
         }
     }
@@ -210,6 +293,10 @@ class MainViewModel : ViewModel() {
         _successMessage.value = ""
     }
 
+    fun clearQuantityDialog() {
+        _showQuantityDialog.value = null
+    }
+
     private fun addLog(message: String) {
         val currentLogs = _logs.value?.toMutableList() ?: mutableListOf()
         currentLogs.add(LogEntry(
@@ -217,7 +304,7 @@ class MainViewModel : ViewModel() {
             timestamp = System.currentTimeMillis()
         ))
 
-        // Mantener solo los últimos 100 logs
+        // Keep only last 100 logs
         if (currentLogs.size > 100) {
             currentLogs.removeAt(0)
         }
@@ -225,7 +312,7 @@ class MainViewModel : ViewModel() {
         _logs.value = currentLogs
     }
 
-    // Limpiar logs (llamado desde la UI)
+    // Clear logs (called from UI)
     fun clearLogs() {
         _logs.value = emptyList()
     }

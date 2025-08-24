@@ -9,7 +9,7 @@
     android:background="@color/background_clean"
     tools:context=".MainActivity">
 
-    <!-- Header Compacto -->
+    <!-- Improved Header -->
     <LinearLayout
         android:id="@+id/layoutHeader"
         android:layout_width="0dp"
@@ -23,7 +23,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Logo y Título -->
+        <!-- Logo and Title -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -43,37 +43,44 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:text="Sin usuario activo"
+                android:text="@string/no_active_user"
                 android:textColor="@color/text_secondary_dark"
                 android:textSize="14sp" />
 
         </LinearLayout>
 
-        <!-- Status y Config -->
+        <!-- Status and Settings Icon -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="end">
+            android:gravity="end|center_vertical">
 
             <TextView
                 android:id="@+id/textServerStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="● Desconectado"
+                android:text="● Disconnected"
                 android:textColor="@color/status_error"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:layout_marginBottom="4dp" />
 
+            <!-- Settings Icon Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSettings"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:layout_marginTop="4dp"
-                android:minWidth="0dp"
-                android:text="CONFIGURAR"
-                android:textColor="@color/text_link"
-                android:textSize="11sp" />
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:insetLeft="0dp"
+                android:insetTop="0dp"
+                android:insetRight="0dp"
+                android:insetBottom="0dp"
+                app:icon="@drawable/ic_settings"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconSize="20dp"
+                app:iconTint="@color/text_link"
+                android:contentDescription="Settings" />
 
         </LinearLayout>
 
@@ -105,7 +112,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="Escanee su ID de usuario"
+                android:text="@string/scan_user_id"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="normal" />
@@ -114,7 +121,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Formato: A#12345"
+                android:text="@string/user_id_format"
                 android:textColor="@color/text_hint"
                 android:textSize="14sp" />
 
@@ -144,31 +151,38 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cardScannerStatus">
 
-        <!-- Logs Header Minimal -->
+        <!-- Fixed Logs Header -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingBottom="8dp">
+            android:paddingBottom="8dp"
+            android:minHeight="48dp">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Registro de actividad"
+                android:text="@string/activity_log"
                 android:textColor="@color/text_secondary"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:gravity="center_vertical" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnClearLogs"
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:minWidth="0dp"
-                android:text="Limpiar"
+                android:layout_height="40dp"
+                android:minWidth="72dp"
+                android:minHeight="40dp"
+                android:text="@string/clear"
                 android:textColor="@color/text_link"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:textAllCaps="false"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="0dp"
+                android:layout_gravity="center_vertical" />
 
         </LinearLayout>
 
