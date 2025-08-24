@@ -20,5 +20,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "GunderlinScanner"
-include(":app")
- 
+include(":app")  // ← Esta línea es CRÍTICA

@@ -1,5 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Paleta Profesional - Tonos neutros y sobrios -->
+
+    <!-- Backgrounds -->
+    <color name="background_clean">#F8F9FA</color>
+    <color name="header_bg">#FFFFFF</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="logs_bg">#F8F9FA</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#212529</color>
+    <color name="text_primary_dark">#343A40</color>
+    <color name="text_secondary">#6C757D</color>
+    <color name="text_secondary_dark">#868E96</color>
+    <color name="text_hint">#ADB5BD</color>
+    <color name="text_link">#0D6EFD</color>
+
+    <!-- Status Colors - Más sobrios -->
+    <color name="status_connected">#198754</color>
+    <color name="status_waiting">#0D6EFD</color>
+    <color name="status_inactive">#DEE2E6</color>
+    <color name="status_error">#DC3545</color>
+
+    <!-- Log Colors - Menos saturados -->
+    <color name="log_success">#146C43</color>
+    <color name="log_error">#B02A37</color>
+    <color name="log_warning">#B76E00</color>
+    <color name="log_info">#055160</color>
+    <color name="log_user">#6A1A9A</color>
+    <color name="log_pending">#856404</color>
+
+    <!-- Legacy colors (por compatibilidad) -->
+    <color name="primary">#0D6EFD</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="success">#198754</color>
+    <color name="error">#DC3545</color>
+    <color name="warning">#FFC107</color>
+    <color name="info">#0DCAF0</color>
+    <color name="user">#6F42C1</color>
+    <color name="pending">#FD7E14</color>
+
+    <!-- Basic Colors -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
 </resources>
